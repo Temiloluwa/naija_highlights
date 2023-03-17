@@ -8,18 +8,26 @@
 import json
 import os
 from itemadapter import ItemAdapter
+from scrapy.exporters import JsonLinesItemExporter
 
 
 class NaijaHighlightsPipeline:
-    filename = os.path.join(os.path.dirname(__file__),
-                     'data', 'bronze','items.json')
+    root = os.path.join(os.path.dirname(__file__), 'data', 'bronze')
     def open_spider(self, spider):
-        self.file = open(self.filename, 'w')
+        self.day_export = {}
 
     def close_spider(self, spider):
         self.file.close()
 
     def process_item(self, item, spider):
-        line = json.dumps(ItemAdapter(item).asdict()) + "\n"
-        self.file.write(line)
-        return item
+        adapter = ItemAdapter(item)
+        day = adapter["postdate"]
+        if day not in self.day_export:
+            _dir = os.path.join(self.root, day)
+            os.makedirs(_dir, exist_ok=True)
+            json_file = open(_dir, "items.json", 'wb')
+            exporter = JsonLinesItemExporter(json_file)
+            exporter.start_exporting()
+            self.day_export[day] = (exporter, json_file)
+
+        return 
