@@ -25,17 +25,12 @@ class PunchNgSpider(SitemapSpider):
     def parse(self, response):
         post = NaijaHighlightsItem()
         article =  response.css(".single-article")
-        post["title"] = article.css("h1::text").extract()
-        body = ""
-        for paragraph in article.css("p"):
-            body += paragraph.extract()
-
-        post["body"] = body
-
-        post["weblink"] = None
-        post["title"] = None
-        post["thumbnaillink"] = None
-        post["author"] = None
-        post["body"] = None
+        post["weblink"] = response.url
+        post["title"] = article.css("h1::text").get()
+        post["postdate"] = article.css(".post-date::text").get()
+        post["thumbnaillink"] = response.xpath("//figure/img/@src").get()
+        post["author"] = response.xpath("//span[@class='post-author']/a/text()").get()
+        post["body"] = article.css(".post-content").xpath("p").getall()
 
         yield post
+    

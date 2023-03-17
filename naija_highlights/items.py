@@ -8,6 +8,10 @@ import scrapy
 
 class NaijaHighlightsItem(scrapy.Item):
     # define the fields for your item here like:
-    # name = scrapy.Field()
+    weblink = scrapy.Field()
     title = scrapy.Field()
+    postdate = scrapy.Field()
+    thumbnaillink = scrapy.Field()
+    author = scrapy.Field()
     body = scrapy.Field()
+    
