@@ -27,7 +27,7 @@ class PunchNgSpider(SitemapSpider):
         article =  response.css(".single-article")
         post["weblink"] = response.url
         post["title"] = article.css("h1::text").get()
-        post["postdate"] = article.css(".post-date::text").get().strip(" ")
+        post["postdate"] = article.css(".post-date::text").get().strip("\n").strip(" ")
         post["thumbnaillink"] = response.xpath("//figure/img/@src").get()
         post["author"] = response.xpath("//span[@class='post-author']/a/text()").get()
         post["body"] = article.css(".post-content").xpath("p").getall()

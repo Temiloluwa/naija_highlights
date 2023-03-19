@@ -17,17 +17,21 @@ class NaijaHighlightsPipeline:
         self.day_export = {}
 
     def close_spider(self, spider):
-        self.file.close()
+        for exporter, json_file in self.day_export.values():
+            exporter.finish_exporting()
+            json_file.close()
+
 
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
         day = adapter["postdate"]
+        day_dir = os.path.join(self.root, day)
         if day not in self.day_export:
-            _dir = os.path.join(self.root, day)
-            os.makedirs(_dir, exist_ok=True)
-            json_file = open(_dir, "items.json", 'wb')
-            exporter = JsonLinesItemExporter(json_file)
-            exporter.start_exporting()
-            self.day_export[day] = (exporter, json_file)
-
+            os.makedirs(day_dir, exist_ok=True)
+            json_file = open(os.path.join(day_dir, "items.json"), 'wb')
+        json_file = open(os.path.join(day_dir, "items.json"), 'ab')
+        exporter = JsonLinesItemExporter(json_file)
+        exporter.start_exporting()
+        self.day_export[day] = (exporter, json_file)
+        exporter.export_item(item)
         return 
