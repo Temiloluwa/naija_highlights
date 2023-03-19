@@ -1,11 +1,3 @@
- # Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-
-
-# useful for handling different item types with a single interface
-import json
 import os
 from itemadapter import ItemAdapter
 from scrapy.exporters import JsonLinesItemExporter
@@ -21,11 +13,10 @@ class NaijaHighlightsPipeline:
             exporter.finish_exporting()
             json_file.close()
 
-
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
-        day = adapter["postdate"]
-        day_dir = os.path.join(self.root, day)
+        day, month, year = adapter["postdate"]
+        day_dir = os.path.join(self.root, f"year={year}/month={month}/day={day}")
         if day not in self.day_export:
             os.makedirs(day_dir, exist_ok=True)
             json_file = open(os.path.join(day_dir, "items.json"), 'wb')

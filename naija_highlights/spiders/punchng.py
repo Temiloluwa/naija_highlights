@@ -1,4 +1,6 @@
 import pytz
+import re
+from typing import Tuple
 from datetime import datetime
 from scrapy.spiders import SitemapSpider
 from naija_highlights.items import NaijaHighlightsItem
@@ -8,6 +10,14 @@ def localize_time(dt: datetime) -> datetime:
     if dt.tzinfo:
         return dt.replace(tzinfo=pytz.timezone('Africa/Lagos'))
     return pytz.timezone('Africa/Lagos').localize(dt)
+
+
+def preprocess_postdate(dt: str) -> Tuple[int, int, int]:
+    """ preprocess post date """
+    dt = dt.strip("\n").strip(" ")
+    dt = re.sub(r'(th)|(st)|(nd)', '', dt)
+    dt = datetime.strptime(dt, '%d %B %Y')
+    return dt.day, dt.month, dt.year
 
 class PunchNgSpider(SitemapSpider):
     name = "punchng"
@@ -27,7 +37,7 @@ class PunchNgSpider(SitemapSpider):
         article =  response.css(".single-article")
         post["weblink"] = response.url
         post["title"] = article.css("h1::text").get()
-        post["postdate"] = article.css(".post-date::text").get().strip("\n").strip(" ")
+        post["postdate"] = preprocess_postdate(article.css(".post-date::text").get())
         post["thumbnaillink"] = response.xpath("//figure/img/@src").get()
         post["author"] = response.xpath("//span[@class='post-author']/a/text()").get()
         post["body"] = article.css(".post-content").xpath("p").getall()
