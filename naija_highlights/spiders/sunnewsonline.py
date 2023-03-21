@@ -78,19 +78,7 @@ class Sunnewsonline(CrawlSpider):
         self.national_page += 1
         if self.national_page <= self.max_page:
             yield response.follow("https://sunnewsonline.com/category/national/page/{self.national_page}/",
-                            callback=self.parse_national)
-
-    def parse_next(self, response):
-        page_post_links = response.css(".archive-grid-single").xpath("@href").getall()
-        for link in page_post_links:
-            yield scrapy.Request(link, callback=self.parse)
-        
-        self.national_page += 1
-        if self.national_page <= self.max_page:
-            yield response.follow("https://sunnewsonline.com/category/national/page/{self.national_page}/",
-                            callback=self.parse_national)
-
-    
+                            self.parse_national)
 
     def parse(self, response):
         post = NaijaHighlightsItem()
@@ -104,6 +92,7 @@ class Sunnewsonline(CrawlSpider):
         post["thumbnaillink"] = response.xpath("//article/figure/img/@src").get()
         post["author"] = proprecess_author(response)
         post["body"] = response.css(".post-content").xpath("p").getall()
+        post["spider"] = self.name
 
         # ascertain that post was created this week
         #if week_number == self.this_week:

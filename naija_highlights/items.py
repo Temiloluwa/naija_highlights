@@ -14,4 +14,5 @@ class NaijaHighlightsItem(scrapy.Item):
     thumbnaillink = scrapy.Field()
     author = scrapy.Field()
     body = scrapy.Field()
+    spider = scrapy.Field()
     

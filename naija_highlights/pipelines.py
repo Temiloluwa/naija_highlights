@@ -28,8 +28,9 @@ class NaijaHighlightsPipeline:
 
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
+        spider = adapter["spider"]
         day, month, year = adapter["postdate"]
-        day_dir = os.path.join(self.root, f"year={year}/month={month}/day={day}")
+        day_dir = os.path.join(self.root, f"{spider}/year={year}/month={month}/day={day}")
         if day not in self.day_export:
             os.makedirs(day_dir, exist_ok=True)
             json_file = open(os.path.join(day_dir, "items.json"), 'wb')
