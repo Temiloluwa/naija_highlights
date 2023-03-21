@@ -14,7 +14,7 @@ NEWSPIDER_MODULE = "naija_highlights.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = "naija_highlights (+http://www.yourdomain.com)"
+#USER_AGENT = "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Mobile Safari/537.36"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -48,11 +48,16 @@ ROBOTSTXT_OBEY = True
 #    "naija_highlights.middlewares.NaijaHighlightsSpiderMiddleware": 543,
 #}
 
+#PROXY_POOL_ENABLED = True
+
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    "naija_highlights.middlewares.NaijaHighlightsDownloaderMiddleware": 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': 400,
+#    'scrapy_proxy_pool.middlewares.ProxyPoolMiddleware': 610,
+#    'scrapy_proxy_pool.middlewares.BanDetectionMiddleware': 620,
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
