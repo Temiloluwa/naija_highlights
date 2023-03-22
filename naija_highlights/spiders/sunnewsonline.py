@@ -4,13 +4,12 @@ import pytz
 import re
 import os
 import scrapy
-from scrapy.spiders import CrawlSpider, Rule
-from scrapy.linkextractors import LinkExtractor
+from scrapy.spiders import CrawlSpider
 from typing import Tuple
 from datetime import datetime
 from naija_highlights.items import NaijaHighlightsItem
 
-log_dir = os.path.join(os.path.dirname(__file__), 'data', 'logs')
+log_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'logs')
 log_format = logging.Formatter("%(asctime)s %(filename)-12s %(levelname)-8s %(message)s")
 os.makedirs(log_dir, exist_ok=True)
 logger = logging.getLogger(__name__)
@@ -61,32 +60,24 @@ def get_this_week():
 
 class Sunnewsonline(CrawlSpider):
     name = "Sunnewsonline"
-    start_urls = ["https://sunnewsonline.com"]
     this_week = get_this_week()
-    national_page = 1
-    max_page = 4
+    max_page = 10
 
-    rules = (
-        Rule(LinkExtractor(allow=("category/national/",)), callback='parse_national'),
-    ) 
-
-    def parse_national(self, response):
-        page_post_links = response.css(".archive-grid-single").xpath("@href").getall()
-        for link in page_post_links:
-            yield scrapy.Request(link, callback=self.parse)
-        
-        self.national_page += 1
-        if self.national_page <= self.max_page:
-            yield response.follow("https://sunnewsonline.com/category/national/page/{self.national_page}/",
-                            self.parse_national)
+    def start_requests(self):
+        return [  
+            scrapy.Request(f"https://sunnewsonline.com/category/national/page/{pg}", callback=self.parse)
+            for pg in range(1, self.max_page + 1)]
 
     def parse(self, response):
+        page_post_links = response.css(".archive-grid-single").xpath("@href").getall()
+        return response.follow_all(page_post_links, self.parse_national)
+       
+
+    def parse_national(self, response):
         post = NaijaHighlightsItem()
         post["weblink"] = response.url
         post["title"] = response.css(".post-title::text").get()
         dt = preprocess_postdate(response.css(".post-date::text").getall()[-1])
-        if dt is None:
-            self.logger.info(f'response url: {response.url} has an error')
         _, week_number, _ = dt.isocalendar()
         post["postdate"] = (dt.day, dt.month, dt.year) 
         post["thumbnaillink"] = response.xpath("//article/figure/img/@src").get()
@@ -95,6 +86,5 @@ class Sunnewsonline(CrawlSpider):
         post["spider"] = self.name
 
         # ascertain that post was created this week
-        #if week_number == self.this_week:
-        yield post
-    
+        if week_number == self.this_week:
+            yield post
