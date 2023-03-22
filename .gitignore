@@ -1,2 +1,15 @@
 *.pyc
 *.vscode
+naija_highlights/__pycache__/
+naija_highlights/spiders/__pycache__/
+
+.installed.cfg
+bin
+develop-eggs
+dist
+downloads
+eggs
+parts
+src/*.egg-info
+lib
+lib64

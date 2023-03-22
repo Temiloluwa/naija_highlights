@@ -10,17 +10,6 @@ from scrapy.spiders import Spider
 from scrapy.spiders import XMLFeedSpider
 from naija_highlights.items import NaijaHighlightsItem
 
-log_dir = os.path.join(os.path.dirname(__file__), 'data', 'logs')
-log_format = logging.Formatter("%(asctime)s %(filename)-12s %(levelname)-8s %(message)s")
-os.makedirs(log_dir, exist_ok=True)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-stream_handler = logging.StreamHandler(sys.stdout)
-stream_handler.setFormatter(log_format)
-logger.addHandler(stream_handler)
-file_handler = logging.FileHandler(os.path.join(log_dir, f"logfile.log"))
-file_handler.setFormatter(file_handler)
-logger.addHandler(file_handler)
 
 
 def localize_time(dt: datetime) -> datetime:

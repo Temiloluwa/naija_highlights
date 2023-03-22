@@ -9,18 +9,19 @@ from typing import Tuple
 from datetime import datetime
 from naija_highlights.items import NaijaHighlightsItem
 
-log_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'logs')
-log_format = logging.Formatter("%(asctime)s %(filename)-12s %(levelname)-8s %(message)s")
-os.makedirs(log_dir, exist_ok=True)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-stream_handler = logging.StreamHandler(sys.stdout)
-stream_handler.setFormatter(log_format)
-logger.addHandler(stream_handler)
-file_handler = logging.FileHandler(os.path.join(log_dir, f"logfile.log"))
-file_handler.setFormatter(file_handler)
-logger.addHandler(file_handler)
 
+def setup_logger(logger):
+    log_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'logs')
+    log_format = logging.Formatter("%(asctime)s %(filename)-12s %(levelname)-8s %(message)s")
+    os.makedirs(log_dir, exist_ok=True)
+    logger.setLevel(logging.DEBUG)
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setFormatter(log_format)
+    logger.addHandler(stream_handler)
+    file_handler = logging.FileHandler(os.path.join(log_dir, f"logfile.log"))
+    file_handler.setFormatter(file_handler)
+    logger.addHandler(file_handler)
+    return logger
 
 def localize_time(dt: datetime) -> datetime:
     """ localize time to Lagos """
@@ -59,14 +60,48 @@ def get_this_week():
     return this_week
 
 class Sunnewsonline(CrawlSpider):
-    name = "Sunnewsonline"
+    name = "sunnewsonline"
     this_week = get_this_week()
-    max_page = 10
+    max_page = 4
+    scraped_links = []
+
+
+    def __init__(self):
+        logger = setup_logger(logging.getLogger(self.name))
 
     def start_requests(self):
-        return [  
+        all_requests = []
+        all_requests.extend([  
             scrapy.Request(f"https://sunnewsonline.com/category/national/page/{pg}", callback=self.parse)
-            for pg in range(1, self.max_page + 1)]
+            for pg in range(1, self.max_page + 1)
+            ])
+        all_requests.extend([  
+            scrapy.Request(f"https://sunnewsonline.com/category/columns/page/{pg}", callback=self.parse)
+            for pg in range(1, self.max_page + 1)
+            ])
+        all_requests.extend([  
+            scrapy.Request(f"https://sunnewsonline.com/category/business/page/{pg}", callback=self.parse)
+            for pg in range(1, self.max_page + 1)
+            ])
+        all_requests.extend([  
+            scrapy.Request(f"https://sunnewsonline.com/category/politics/page/{pg}", callback=self.parse)
+            for pg in range(1, self.max_page + 1)
+            ])
+        all_requests.extend([  
+            scrapy.Request(f"https://sunnewsonline.com/category/opinion/page/{pg}", callback=self.parse)
+            for pg in range(1, self.max_page + 1)
+            ])
+        all_requests.extend([  
+            scrapy.Request(f"https://sunnewsonline.com/category/entertainment/page/{pg}", callback=self.parse)
+            for pg in range(1, self.max_page + 1)
+            ])
+        all_requests.extend([  
+            scrapy.Request(f"https://sunnewsonline.com/category/sporting-sun/page/{pg}", callback=self.parse)
+            for pg in range(1, self.max_page + 1)
+            ])
+        
+        return all_requests
+
 
     def parse(self, response):
         page_post_links = response.css(".archive-grid-single").xpath("@href").getall()
@@ -84,7 +119,9 @@ class Sunnewsonline(CrawlSpider):
         post["author"] = proprecess_author(response)
         post["body"] = response.css(".post-content").xpath("p").getall()
         post["spider"] = self.name
-
+        
         # ascertain that post was created this week
         if week_number == self.this_week:
-            yield post
+            if response.url not in self.scraped_links:
+                self.scraped_links.append(response.url)
+                yield post
