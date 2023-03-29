@@ -6,7 +6,7 @@ An NLP project based on weekly nigerian news
 
 Data is scraped weekly from the following news online platforms
 1. https://punchng.com/
-2. "https://sunnewsonline.com/
+2. https://sunnewsonline.com/
 
 ## Run crawlers
 

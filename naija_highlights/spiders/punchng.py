@@ -1,19 +1,13 @@
-import sys
-import logging
-import pytz
 import re
-import os
 from typing import Tuple
 from datetime import datetime
 from scrapy.spiders import SitemapSpider
 from naija_highlights.items import NaijaHighlightsItem
+from helpers import *
 
-
-def localize_time(dt: datetime) -> datetime:
-    """ localize time to Lagos """
-    if dt.tzinfo:
-        return dt.replace(tzinfo=pytz.timezone('Africa/Lagos'))
-    return pytz.timezone('Africa/Lagos').localize(dt)
+def preprocess_body(body: str) -> str:
+    """ preprocess body """
+    return list(map(clean_words, map(clean_html, body)))
 
 
 def preprocess_postdate(dt: str) -> Tuple[int, int, int]:
@@ -23,9 +17,11 @@ def preprocess_postdate(dt: str) -> Tuple[int, int, int]:
     dt = datetime.strptime(dt, '%d %B %Y')
     return dt
 
-def get_this_week():
-    _, this_week, _ = localize_time(datetime.today()).isocalendar()
-    return this_week
+
+def preprocess_author(author: str) -> str:
+    """ preprocess author """
+    return author if author is not None else "Anonymous"
+
 
 class PunchNgSpider(SitemapSpider):
     name = "punchng"
@@ -49,8 +45,10 @@ class PunchNgSpider(SitemapSpider):
         _, week_number, _ = dt.isocalendar()
         post["postdate"] = (dt.day, dt.month, dt.year) 
         post["thumbnaillink"] = response.xpath("//figure/img/@src").get()
-        post["author"] = response.xpath("//span[@class='post-author']/a/text()").get()
-        post["body"] = article.css(".post-content").xpath("p").getall()
+        post["author"] = preprocess_author(
+            response.xpath("//span[@class='post-author']/a/text()").get())
+        post["body"] = preprocess_body(
+            article.css(".post-content").xpath("p").getall())
         post["spider"] = self.name
 
         # ascertain that post was created this week

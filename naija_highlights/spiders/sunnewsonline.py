@@ -8,6 +8,7 @@ from scrapy.spiders import CrawlSpider
 from typing import Tuple
 from datetime import datetime
 from naija_highlights.items import NaijaHighlightsItem
+from helpers import *
 
 
 def setup_logger(logger):
@@ -23,12 +24,6 @@ def setup_logger(logger):
     logger.addHandler(file_handler)
     return logger
 
-def localize_time(dt: datetime) -> datetime:
-    """ localize time to Lagos """
-    if dt.tzinfo:
-        return dt.replace(tzinfo=pytz.timezone('Africa/Lagos'))
-    return pytz.timezone('Africa/Lagos').localize(dt)
-
 
 def preprocess_postdate(dt: str) -> Tuple[int, int, int]:
     """ preprocess post date """
@@ -40,6 +35,7 @@ def preprocess_postdate(dt: str) -> Tuple[int, int, int]:
         print("could not parse date with error: ", e)
 
     return dt
+
 
 def proprecess_author(response) -> str:
     """ preprocess author """
@@ -55,9 +51,35 @@ def proprecess_author(response) -> str:
     return at
 
 
-def get_this_week():
-    _, this_week, _ = localize_time(datetime.today()).isocalendar()
-    return this_week
+def preprocess_author_and_body(body):
+    """ extract author from author or body """
+    
+    def extract_author(kw, query_string):
+        """extract author from query string"""
+        index = query_string.index(kw)
+        author = query_string[index:]
+        author = clean_words(query_string.split(kw)[-1])
+        return author
+    
+    key_words = ["By", "From"]
+    body_content = []
+    author = None
+    
+    for i, line in enumerate(body):
+        for kw in key_words:
+            if kw in line and author is None:
+                author = body.pop(i)
+                author = author.split("<em>")[0]
+                author = clean_html(author)
+                author = extract_author(kw, author)
+        
+        if (not any([i in line for i in key_words])) and line:
+            body_content.append(clean_words(clean_html(line)))
+        
+    author = "Anonymous" if author is None else author
+    
+    return body_content, author
+
 
 class Sunnewsonline(CrawlSpider):
     name = "sunnewsonline"
@@ -116,8 +138,12 @@ class Sunnewsonline(CrawlSpider):
         _, week_number, _ = dt.isocalendar()
         post["postdate"] = (dt.day, dt.month, dt.year) 
         post["thumbnaillink"] = response.xpath("//article/figure/img/@src").get()
-        post["author"] = proprecess_author(response)
-        post["body"] = response.css(".post-content").xpath("p").getall()
+        
+        body = response.css(".post-content").xpath("p").getall()
+        body, author = preprocess_author_and_body(body)
+        
+        post["author"] = author
+        post["body"] = body
         post["spider"] = self.name
         
         # ascertain that post was created this week
