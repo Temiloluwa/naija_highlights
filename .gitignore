@@ -2,6 +2,9 @@
 *.vscode
 naija_highlights/__pycache__/
 naija_highlights/spiders/__pycache__/
+naija_highlights/data/
+.idea/
+.ipynb_checkpoints/
 
 .installed.cfg
 bin

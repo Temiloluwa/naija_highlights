@@ -3,7 +3,7 @@ from typing import Tuple
 from datetime import datetime
 from scrapy.spiders import SitemapSpider
 from naija_highlights.items import NaijaHighlightsItem
-from helpers import *
+from naija_highlights.helpers import *
 
 def preprocess_body(body: str) -> str:
     """ preprocess body """
@@ -25,7 +25,7 @@ def preprocess_author(author: str) -> str:
 
 class PunchNgSpider(SitemapSpider):
     name = "punchng"
-    sitemap_urls = ["https://punchng.com/sitemap-posttype-post.2023.xml"]
+    sitemap_urls = ["https://punchng.com/sitemap_index.xml"]
     this_week = get_this_week()
 
     def sitemap_filter(self, entries):

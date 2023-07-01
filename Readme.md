@@ -10,7 +10,6 @@ Data is scraped weekly from the following news online platforms
 
 ## Run crawlers
 
-Follow the instructions in `requirements.txt` to install the conda enviroment.
 <br>
 Crawl commands:
 ``` bash

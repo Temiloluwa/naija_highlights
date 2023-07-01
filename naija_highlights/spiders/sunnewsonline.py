@@ -1,14 +1,11 @@
 import sys
 import logging
-import pytz
-import re
 import os
 import scrapy
 from scrapy.spiders import CrawlSpider
 from typing import Tuple
-from datetime import datetime
 from naija_highlights.items import NaijaHighlightsItem
-from helpers import *
+from naija_highlights.helpers import *
 
 
 def setup_logger(logger):
