@@ -5,6 +5,7 @@ naija_highlights/spiders/__pycache__/
 naija_highlights/data/
 .idea/
 .ipynb_checkpoints/
+.env
 
 .installed.cfg
 bin
