@@ -1,5 +1,5 @@
 SRC_DIR := data/old_sources/newspapers/scans/silver/aws_text_extract/ocr/december_1994
-MODEL := "lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF"
+MODEL := "TheBloke/Mistral-7B-Instruct-v0.2-GGUF"
 TEMPERATURE := 0
 API_KEY := "lm-studio"
 API_URL := "http://localhost:1234/v1"
