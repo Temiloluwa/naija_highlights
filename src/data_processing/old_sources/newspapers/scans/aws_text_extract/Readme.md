@@ -1,5 +1,13 @@
 # OCR on OLD Nigerian Newspapers
 
+## Overview
+
+OCR is performed with Text extract in the following steps:
+
+1. convert tiff to jpg
+2. extract the layout or bounded boxes in the image 
+3. crop the image using the bounding box information and execute OCR
+
 ## Done Tasks
 
 1. The `src/get_document_layout.py` uses Amazon Textextract to get the document layout and stores the information as json files.
